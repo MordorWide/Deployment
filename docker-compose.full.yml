@@ -1,0 +1,109 @@
+
+services:
+  mordorwide-eanation:
+    build:
+      context: mordorwide-eanation
+    image: mordorwide/eanation:latest
+    container_name: mordorwide-eanation
+    environment:
+      - "SECRET_KEY=${SECRET_KEY}"
+      - "DB_PROTO=${DB_PROTO}"
+      - "DB_NAME=${DB_NAME}"
+      - "DB_USER=${DB_USER}"
+      - "DB_PASSWORD=${DB_PASSWORD}"
+      - "DB_HOST=${DB_HOST}"
+      - "DB_PORT=${DB_PORT}"
+      - "DB_PARAMS=${DB_PARAMS}"
+      - "INIT_SCHEMAS=${INIT_SCHEMAS}"
+      - "PATH_PRIVATE_KEY=${PATH_PRIVATE_KEY:-/ssl/priv.pem}"
+      - "PATH_PUBLIC_KEY=${PATH_PUBLIC_KEY:-/ssl/pub.pem}"
+      - "STUN_ENABLED=${STUN_ENABLED}"
+      - "STUN_RELAY_HOST=${STUN_RELAY_HOST}"
+      - "STUN_RELAY_PORT=${STUN_RELAY_PORT}"
+      - "STUN_RELAY_SOURCE_PORT=${STUN_RELAY_SOURCE_PORT}"
+      - "STUN_INTERNAL_SOURCE_PORT=${STUN_INTERNAL_SOURCE_PORT}"
+      - "TURN_ENABLED=${TURN_ENABLED}"
+      - "TURN_RELAY_INTERNAL_HOST=${TURN_RELAY_INTERNAL_HOST}"
+      - "TURN_RELAY_EXTERNAL_IP=${TURN_RELAY_EXTERNAL_IP}"
+      - "TURN_RELAY_PORT=${TURN_RELAY_PORT}"
+    volumes:
+      - ./ssl:/ssl:ro
+      # Re-mount the SQLite database
+      # - ./db:/db
+      # You need to also set DB_NAME to /db/eanation.db in this case.
+    ports:
+      - "0.0.0.0:18860:18860"
+      - "0.0.0.0:18870:18870"
+      - "0.0.0.0:18880:18880"
+      - "0.0.0.0:18885:18885"
+      - "0.0.0.0:18885:18885/udp"
+    # Needed to access udpturn in host network mode
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  mordorwide-web:
+    build:
+      context: mordorwide-web
+    image: mordorwide/web:latest
+    container_name: mordorwide-web
+    environment:
+      - "SECRET_KEY=${SECRET_KEY}"
+      - "DEBUG=${DEBUG}"
+      - "ALLOWED_HOSTS=${ALLOWED_HOSTS}"
+      - "DB_PROTO=${DB_PROTO}"
+      - "DB_NAME=${DB_NAME}"
+      - "DB_USER=${DB_USER}"
+      - "DB_PASSWORD=${DB_PASSWORD}"
+      - "DB_HOST=${DB_HOST}"
+      - "DB_PORT=${DB_PORT}"
+      - "STATIC_ROOT=${STATIC_ROOT}"
+      - "EMAIL_BACKEND=${EMAIL_BACKEND}"
+      - "DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL}"
+      - "SERVER_EMAIL=${SERVER_EMAIL}"
+      - "EMAIL_HOST=${EMAIL_HOST}"
+      - "EMAIL_PORT=${EMAIL_PORT}"
+      - "EMAIL_HOST_USER=${EMAIL_HOST_USER}"
+      - "EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}"
+      - "USE_HTTPS=${USE_HTTPS}"
+      - "SECURE_SSL_REDIRECT=${SECURE_SSL_REDIRECT}"
+      - "CSRF_COOKIE_SECURE=${CSRF_COOKIE_SECURE}"
+      - "SESSION_COOKIE_SECURE=${SESSION_COOKIE_SECURE}"
+      - "ADMINS=${ADMINS}"
+      - "IMPRINT_TEXT=${IMPRINT_TEXT}"
+    depends_on:
+      - mordorwide-db
+    volumes:
+      - ./static:/static
+    ports:
+      - "127.0.0.1:8000:8000"
+    restart: unless-stopped
+
+  mordorwide-udpturn:
+    build:
+      context: mordorwide-udpturn
+    image: mordorwide/udpturn:latest
+    container_name: mordorwide-udpturn
+    environment:
+      - "RELAY_PORT_RANGE_START=${RELAY_PORT_RANGE_START}"
+      - "RELAY_PORT_RANGE_END=${RELAY_PORT_RANGE_END}"
+      - "CMD_HOST=${CMD_HOST}"
+      - "CMD_PORT=${CMD_PORT}"
+    network_mode: "host"
+    #ports:
+    #  - "${RELAY_PORT_RANGE_START:-40000}-${RELAY_PORT_RANGE_END:-50000}/udp"
+    #  - "127.0.0.1:8001:8001"
+    restart: unless-stopped
+
+  mordorwide-db:
+    image: postgres:15
+    container_name: mordorwide-db
+    environment:
+      - "POSTGRES_DB=${DB_NAME}"
+      - "POSTGRES_USER=${DB_USER}"
+      - "POSTGRES_PASSWORD=${DB_PASSWORD}"
+    volumes:
+      - ./db_data:/var/lib/postgresql/data
+    #ports:
+    #  - "127.0.0.1:5432:5432"
+    restart: unless-stopped

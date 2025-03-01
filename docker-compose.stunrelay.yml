@@ -1,0 +1,14 @@
+
+services:
+  mordorwide-stunrelay:
+    build:
+      context: mordorwide-stunrelay
+    image: mordorwide/stunrelay:latest
+    container_name: mordorwide-stunrelay
+    environment:
+      - "CMD_HOST=${CMD_HOST}"
+      - "CMD_PORT=${CMD_PORT}"
+    ports:
+      - "0.0.0.0:8002:8002"
+    # Make sure that the incoming rules are set up correctly
+    restart: unless-stopped

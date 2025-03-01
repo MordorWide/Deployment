@@ -1,0 +1,6 @@
+# Files to ignore for git
+/mordorwide-*/
+/ssl/*
+env.full
+env.stunrelay
+img-*.tar.gz

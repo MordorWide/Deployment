@@ -72,7 +72,7 @@ scp docker-compose.stunrelay.yml main@natneg.mordorwi.de:~/mordorwide-stun-deplo
 ssh main@natneg.mordorwi.de << 'EOF'
 set -e
 cd ~/mordorwide-stun-deployment
-docker compose up -d
+docker compose --env-file env.stunrelay -f docker-compose.stunrelay.yml up -d
 EOF
 
 # [Steps to setup the main server]
@@ -112,7 +112,7 @@ scp -r ssl main@mordorwi.de:~/mordorwide-deployment/ssl
 ssh main@mordorwi.de << 'EOF'
 set -e
 cd ~/mordorwide-deployment
-docker compose up -d
+docker compose --env-file env.full -f docker-compose.full.yml up -d
 EOF
 
 # 9. Setup the HTTP(S) reverse proxy to server the web domain to the local web server at 127.0.0.1:8000.

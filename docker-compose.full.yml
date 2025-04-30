@@ -4,6 +4,7 @@ services:
     build:
       context: mordorwide-eanation
     image: mordorwide/eanation:latest
+    pull_policy: never
     container_name: mordorwide-eanation
     environment:
       - "SECRET_KEY=${SECRET_KEY}"
@@ -47,6 +48,7 @@ services:
     build:
       context: mordorwide-web
     image: mordorwide/web:latest
+    pull_policy: never
     container_name: mordorwide-web
     environment:
       - "SECRET_KEY=${SECRET_KEY}"
@@ -84,6 +86,7 @@ services:
     build:
       context: mordorwide-udpturn
     image: mordorwide/udpturn:latest
+    pull_policy: never
     container_name: mordorwide-udpturn
     environment:
       - "RELAY_PORT_RANGE_START=${RELAY_PORT_RANGE_START}"

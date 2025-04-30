@@ -4,6 +4,7 @@ services:
     build:
       context: mordorwide-stunrelay
     image: mordorwide/stunrelay:latest
+    pull_policy: never
     container_name: mordorwide-stunrelay
     environment:
       - "CMD_HOST=${CMD_HOST}"
